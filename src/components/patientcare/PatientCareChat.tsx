@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { useStickToBottomContext } from "use-stick-to-bottom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, MessageSquareMore, Paperclip, Pill, RotateCw, SendHorizontal, Stethoscope, TriangleAlert } from "lucide-react";
 import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/ai-elements/conversation";
@@ -32,6 +33,15 @@ const MODES: { mode: ChatMode; label: string; icon: typeof Pill }[] = [
   { mode: "medicine", label: "Medicine", icon: Pill },
   { mode: "photo", label: "Photo scan", icon: Camera },
 ];
+
+/** Jump to the newest message whenever the user sends something, even if they had scrolled up. */
+function ScrollOnSend({ count }: { count: number }) {
+  const { scrollToBottom } = useStickToBottomContext();
+  useEffect(() => {
+    if (count > 0) void scrollToBottom();
+  }, [count, scrollToBottom]);
+  return null;
+}
 
 function readableError(error: Error | undefined) {
   if (!error) return null;
@@ -122,7 +132,7 @@ export function PatientCareChat() {
 
       <Header onClear={clearChat} canClear={messages.length > 0} />
 
-      <Conversation className="relative z-[1] min-h-0 flex-1">
+      <Conversation className="relative z-[1] min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,transparent,black_24px)]">
         <ConversationContent className="mx-auto w-full max-w-6xl gap-6 px-4 pt-4 pb-6 sm:px-8">
           <Welcome activeMode={mode} onSelect={selectMode} />
           <div className="mt-2 flex flex-col gap-6">
@@ -146,6 +156,7 @@ export function PatientCareChat() {
             )}
           </div>
         </ConversationContent>
+        <ScrollOnSend count={messages.filter((m) => m.role === "user").length} />
         <ConversationScrollButton className="bottom-4" />
       </Conversation>
 
