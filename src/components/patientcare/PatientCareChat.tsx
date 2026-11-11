@@ -132,7 +132,7 @@ export function PatientCareChat() {
 
       <Header onClear={clearChat} canClear={messages.length > 0} />
 
-      <Conversation className="relative z-[1] min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,transparent,black_24px)]">
+      <Conversation initial={false} className="relative z-[1] min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,transparent,black_24px)]">
         <ConversationContent className="mx-auto w-full max-w-6xl gap-6 px-4 pt-4 pb-6 sm:px-8">
           <Welcome activeMode={mode} onSelect={selectMode} />
           <div className="mt-2 flex flex-col gap-6">

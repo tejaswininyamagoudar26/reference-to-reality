@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Medicine facts must come only from `lookupMedicine` (RxNorm + openFDA); the AI explains verified data and never invents it — keeps answers traceable to a real source.
+- Emergency screening (`src/lib/medical/safety.ts`) runs server-side before every AI call — the AI must not be the only emergency detector.
+- Chat is one session-only conversation (no persistence, no auth) streamed from `/api/chat` with the `lookup_medicine` tool — matches the no-login, no-stored-health-data requirement.
+- Upload rules live in `image-validation.ts` and are enforced on both client and server, including file-signature checks.
