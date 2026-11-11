@@ -129,19 +129,24 @@ async function searchFda(ingredients: string[], rawTerm: string): Promise<FdaLab
 function pickBest(labels: FdaLabel[], ingredients: string[], rawTerm: string): FdaLabel | null {
   if (!labels.length) return null;
   const want = ingredients.join(" and ").toLowerCase();
-  const score = (l: FdaLabel) => {
-    let s = 0;
+  // A label only counts when its generic or brand name genuinely matches; content richness breaks ties.
+  const nameScore = (l: FdaLabel) => {
     const generic = (l.openfda?.generic_name?.[0] ?? "").toLowerCase();
     const brand = (l.openfda?.brand_name?.[0] ?? "").toLowerCase();
+    let s = 0;
     if (want && generic === want) s += 5;
     else if (want && ingredients.every((i) => generic.includes(i.toLowerCase()))) s += 3;
     if (brand && isCloseMatch(rawTerm, brand)) s += 4;
+    return s;
+  };
+  const score = (l: FdaLabel) => {
+    let s = nameScore(l);
     if (l["indications_and_usage"]) s += 2;
     if (l["adverse_reactions"] || l["warnings"]) s += 1;
     return s;
   };
-  const best = [...labels].sort((a, b) => score(b) - score(a))[0];
-  return best && score(best) >= 3 ? best : null;
+  const best = labels.filter((l) => nameScore(l) > 0).sort((a, b) => score(b) - score(a))[0];
+  return best ?? null;
 }
 
 function text(label: FdaLabel, fields: string[]) {
